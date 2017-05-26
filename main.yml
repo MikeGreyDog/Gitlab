@@ -1,0 +1,8 @@
+---
+- hosts: GitLab-server
+  become: yes
+  become_method: sudo
+
+  roles:
+    - gitlab-server
+
