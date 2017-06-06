@@ -12,13 +12,18 @@
 
 # Install GitLab and its dependencies.
 
+- name: Install Epel repository.
+  yum: name=epel-release state=present
+
 - name: Install GitLab dependencies.
-  package: name={{ item }} state=installed
+  yum: name={{ item }} state=present
   with_items:
+    - libselinux-python
     - openssh-server
     - postfix
     - curl
     - openssl
+    - python-pip
 
 - name: Download GitLab repository installation script.
   get_url:
@@ -35,13 +40,14 @@
   when: (gitlab_file.stat.exists == false)
 
 - name: Install GitLab
-  package: name={{ gitlab_edition }} state=installed
+  yum: name=gitlab-ce-9.1.4-ce.0.el6.x86_64  state=present
   when: (gitlab_file.stat.exists == false)
 
 - name: Reconfigure GitLab (first run).
   command: >
     gitlab-ctl reconfigure
     creates=/var/opt/gitlab/bootstrapped
+  when: (gitlab_file.stat.exists == false)
   failed_when: false
 
 - name: Copy GitLab configuration file.
@@ -53,5 +59,38 @@
     mode: 0600
 
 - name: Reconfigure GitLab.
-  shell: gitlab-ctl reconfigure && gitlab-ctl restart
+  shell: gitlab-ctl reconfigure && gitlab-ctl start
 
+- name: Install python modules.
+  shell: pip install {{ item }}
+  with_items:
+     - yamllint
+     - pexpect
+  tags:
+     - pexpect
+
+- name: Copy Gitlab backup archive.
+  copy:
+    src: 1496713308_2017_06_06_gitlab_backup.tar
+    dest: /var/opt/gitlab/backups/
+    owner: git
+    group: git
+    mode: 0600
+
+- name: Stop Gitlab services.
+  shell: gitlab-ctl stop unicorn && gitlab-ctl stop sidekiq
+
+- name: Restore Gitlab from backup.
+  expect: 
+    command: gitlab-rake gitlab:backup:restore BACKUP=1496713308_2017_06_06
+    responses:
+      "Do you want to continue (yes/no)?": "yes"
+
+  tags:
+     - restore
+
+- name: Stop iptables :).
+  shell: service iptables stop
+
+- name: Start Gitlab.
+  shell: gitlab-ctl start

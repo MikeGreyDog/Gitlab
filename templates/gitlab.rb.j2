@@ -16,11 +16,11 @@ gitlab_rails['gitlab_email_reply_to'] = "{{ gitlab_email_reply_to }}"
 nginx['redirect_http_to_https'] = {{ gitlab_redirect_http_to_https }}
 nginx['ssl_certificate'] = "{{ gitlab_ssl_certificate }}"
 nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
-nginx['listen_port'] = "{{ nginx_port }}"
+# nginx['listen_port'] = "{{ nginx_port }}"
 
 
 # Unicorn settings
-unicorn['port'] = "{{ gitlab_port }}"
+# unicorn['port'] = "{{ gitlab_port }}"
 
 
 #Workhorse
