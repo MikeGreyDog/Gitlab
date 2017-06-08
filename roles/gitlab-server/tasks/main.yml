@@ -18,6 +18,7 @@
 - name: Install GitLab dependencies.
   yum: name={{ item }} state=present
   with_items:
+    - git
     - libselinux-python
     - openssh-server
     - postfix
@@ -61,12 +62,15 @@
 - name: Reconfigure GitLab.
   shell: gitlab-ctl reconfigure && gitlab-ctl start
 
+- name: Install argparse
+  easy_install:
+    name: argparse
+    state: latest
+
 - name: Install python modules.
   shell: pip install {{ item }}
   with_items:
      - yamllint
-     - pexpect
-  tags:
      - pexpect
 
 - name: Copy Gitlab backup archive.
@@ -85,9 +89,6 @@
     command: gitlab-rake gitlab:backup:restore BACKUP=1496713308_2017_06_06
     responses:
       "Do you want to continue (yes/no)?": "yes"
-
-  tags:
-     - restore
 
 - name: Stop iptables :).
   shell: service iptables stop
