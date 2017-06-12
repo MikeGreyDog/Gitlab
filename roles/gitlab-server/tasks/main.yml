@@ -73,9 +73,12 @@
      - yamllint
      - pexpect
 
+- debug:
+    msg: "{{ hostvars['localhost']['backup_filename']['stdout'] }}\n{{ hostvars['localhost']['backup_timestamp']['stdout'] }}"
+
 - name: Copy Gitlab backup archive.
   copy:
-    src: 1496713308_2017_06_06_gitlab_backup.tar
+    src: "{{ hostvars['localhost']['backup_filename']['stdout'] }}"
     dest: /var/opt/gitlab/backups/
     owner: git
     group: git
@@ -86,7 +89,7 @@
 
 - name: Restore Gitlab from backup.
   expect: 
-    command: gitlab-rake gitlab:backup:restore BACKUP=1496713308_2017_06_06
+    command: gitlab-rake gitlab:backup:restore BACKUP={{ hostvars['localhost']['backup_timestamp']['stdout'] }}
     responses:
       "Do you want to continue (yes/no)?": "yes"
 
@@ -95,3 +98,4 @@
 
 - name: Start Gitlab.
   shell: gitlab-ctl start
+  

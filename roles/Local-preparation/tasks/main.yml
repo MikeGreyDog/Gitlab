@@ -1,0 +1,25 @@
+ - name: Get repo from github
+   git:
+     repo: 'git@github.com:MikeGreyDog/Gitlab-backups.git'
+     dest: /tmp/repo/Gitlab-backups 
+     accept_hostkey: yes
+
+ - name: Get the latest backup name
+   command: ls /tmp/repo/Gitlab-backups/New-Backup
+   register: backup_filename
+
+ - name: Get backup timestamp
+   shell: echo "{{ backup_filename.stdout }}" | 
+          sed -r 's/_[a-z]+_[a-z].*//'
+   register: backup_timestamp
+
+ - name: Copy latest backup
+   copy: 
+     src: /tmp/repo/Gitlab-backups/New-Backup/{{ backup_filename.stdout }}
+     dest: /home/ansible/Ansible_playbooks/files/
+     owner: ansible
+     group: ansible
+     mode: 0600
+
+ - debug:
+     msg: "{{ hostvars['localhost']['backup_filename']['stdout'] }}"

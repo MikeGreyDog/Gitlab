@@ -1,5 +1,4 @@
 # General config.
-gitlab_external_url: "10.0.2.15"
 gitlab_git_data_dir: "/var/opt/gitlab/git-data"
 gitlab_edition: "gitlab-ce"
 gitlab_backup_path: "/var/opt/gitlab/backups"
@@ -54,3 +53,4 @@ gitlab_email_enabled: "false"
 gitlab_email_from: "gitlab@example.com"
 gitlab_email_display_name: "Gitlab"
 gitlab_email_reply_to: "gitlab@example.com"
+
