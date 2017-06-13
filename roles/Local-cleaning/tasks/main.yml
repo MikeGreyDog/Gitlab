@@ -1,5 +1,0 @@
- - name: Remove cloned repo
-   shell: rm -rf /tmp/repo/Gitlab-backups
-
- - name: Remove copied backup
-   shell: rm -rf /home/ansible/Ansible_playbooks/files/{{ backup_filename.stdout }}
