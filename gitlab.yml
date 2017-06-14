@@ -1,7 +1,7 @@
 ---
-- hosts: localhost
+- hosts: GitLab-server
   become: yes
-  become_user: vagrant
+  become_user: root
   become_method: sudo
   tasks:
 
@@ -76,7 +76,7 @@
 
     - name: Get repo from github
       git:
-        repo: 'https://github.com/MikeGreyDog/Gitlab-backup.git'
+        repo: 'https://github.com/MikeGreyDog/Gitlab-backups.git'
         dest: /tmp/repo/Gitlab-backups
  
     - name: Get the latest backup name
@@ -95,6 +95,7 @@
         owner: git
         group: git
         mode: 0600
+        remote_src: True
 
     - name: Stop Gitlab services.
       shell: gitlab-ctl stop unicorn && gitlab-ctl stop sidekiq
@@ -107,6 +108,21 @@
 
     - name: Stop iptables :).
       shell: service iptables stop
+
+    - name: Create hook directory
+      file: 
+        path: /var/opt/gitlab/git-data/repositories/lv239/Ansible-playbooks.git/hooks/post-receive.d
+        owner: git
+        group: git
+        state: directory
+
+    - name: Copy post-recive hook
+      copy:
+        src: post-receive
+        dest: /var/opt/gitlab/git-data/repositories/lv239/Ansible-playbooks.git/hooks/post-receive.d/
+        owner: git
+        group: git
+        mode: 0600
 
     - name: Start Gitlab.
       shell: gitlab-ctl start
