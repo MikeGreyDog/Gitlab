@@ -113,7 +113,7 @@
       iptables:
         chain: INPUT
         destination: eth0
-        destionation_port: {{ item }}
+        destination_port: {{ item }}
         jump: ACCEPT
       with_items:
          - 22
