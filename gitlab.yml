@@ -106,9 +106,21 @@
         responses:
           "Do you want to continue (yes/no)?": "yes"
 
-    - name: Stop iptables :).
-      shell: service iptables stop
+   # - name: Stop iptables :).
+   #   shell: service iptables stop
 
+    - name: Configure iptables
+      iptables:
+        chain: INPUT
+        destination: eth0
+        destionation_port: {{ item }}
+        jump: ACCEPT
+      with_items:
+         - 22
+         - 80
+         - 443
+         - 9292
+     
     - name: Create hook directory
       file: 
         path: /var/opt/gitlab/git-data/repositories/lv239/Ansible-playbooks.git/hooks/post-receive.d
