@@ -118,6 +118,11 @@
         - 423/tcp
         - 8080/tcp
         - 9292/tcp
+        
+    - name: Restart firewall
+      service:
+        name: firewalld
+        state: restarted
           
     - name: Create hook directory
       file: 
