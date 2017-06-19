@@ -68,9 +68,6 @@
 
     - name: Install argparse
       yum: name=python-argparse state=present
-#      easy_install:
-#        name: argparse
-#        state: present
 
     - name: Install python modules.
       shell: pip install {{ item }}
@@ -111,20 +108,16 @@
           "Do you want to continue (yes/no)?": "yes"
         timeout: 90
 
-    - name: Stop iptables :).
-      shell: service firewalld stop
-
-   # - name: Configure iptables
-   #   iptables:
-   #     chain: INPUT
-   #     destination: eth0
-   #     destination_port: {{ item }}
-   #     jump: ACCEPT
-   #   with_items:
-   #      - 22
-   #      - 80
-   #      - 443
-   #      - 9292
+    - name: Configure firewalld.
+      firewalld:
+        port: "{{ item }}"
+        permanent: true
+        state: enabled
+      with_items:
+        - 80/tcp
+        - 423/tcp
+        - 8080/tcp
+        - 9292/tcp
           
     - name: Create hook directory
       file: 
