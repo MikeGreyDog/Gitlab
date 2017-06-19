@@ -1,3 +1,2 @@
-[localhost]
-localhost ansible_connection=local
-
+[GitLab-server]
+192.168.103.192 ansible_connection=ssh ansible_ssh_user=root ansible_ssh_pass=toor

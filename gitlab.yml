@@ -1,5 +1,5 @@
 ---
-- hosts: localhost
+- hosts: GitLab-server
   become: yes
   become_user: root
   become_method: sudo
@@ -20,7 +20,7 @@
       yum: name=epel-release state=present
 
     - name: Install GitLab dependencies.
-      yum: name={{ item }} state=present
+      yum: name={{ item }} state=latest
       with_items:
         - git
         - libselinux-python
@@ -41,8 +41,11 @@
       command: bash /tmp/gitlab_install_repository.sh
       when: (gitlab_file.stat.exists == false)
 
+    - name: Update Yum cache
+      shell: yum makecache
+
     - name: Install GitLab
-      yum: name=gitlab-ce-9.1.4-ce.0.el6.x86_64  state=present
+      yum: name=gitlab-ce-9.1.4 state=present
       when: (gitlab_file.stat.exists == false)
 
     - name: Reconfigure GitLab (first run).
@@ -64,9 +67,10 @@
       shell: gitlab-ctl reconfigure && gitlab-ctl start
 
     - name: Install argparse
-      easy_install:
-        name: argparse
-        state: latest
+      yum: name=python-argparse state=present
+#      easy_install:
+#        name: argparse
+#        state: present
 
     - name: Install python modules.
       shell: pip install {{ item }}
@@ -105,22 +109,23 @@
         command: gitlab-rake gitlab:backup:restore BACKUP={{ backup_timestamp.stdout }}
         responses:
           "Do you want to continue (yes/no)?": "yes"
+        timeout: 90
 
-   # - name: Stop iptables :).
-   #   shell: service iptables stop
+    - name: Stop iptables :).
+      shell: service firewalld stop
 
-    - name: Configure iptables
-      iptables:
-        chain: INPUT
-        destination: eth0
-        destination_port: {{ item }}
-        jump: ACCEPT
-      with_items:
-         - 22
-         - 80
-         - 443
-         - 9292
-     
+   # - name: Configure iptables
+   #   iptables:
+   #     chain: INPUT
+   #     destination: eth0
+   #     destination_port: {{ item }}
+   #     jump: ACCEPT
+   #   with_items:
+   #      - 22
+   #      - 80
+   #      - 443
+   #      - 9292
+          
     - name: Create hook directory
       file: 
         path: /var/opt/gitlab/git-data/repositories/lv239/Ansible-playbooks.git/hooks/post-receive.d
