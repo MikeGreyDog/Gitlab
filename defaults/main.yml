@@ -1,7 +1,7 @@
 # General config.
 gitlab_git_data_dir: "/var/opt/gitlab/git-data"
 gitlab_edition: "gitlab-ce"
-gitlab_backup_path: "/var/opt/gitlab/backups"
+gitlab_backup_path: "/tmp/repo/Gitlab-backups/New-Backup"
 
 # SSL Configuration.
 gitlab_redirect_http_to_https: "false"

@@ -20,7 +20,7 @@
       yum: name=epel-release state=present
 
     - name: Install GitLab dependencies.
-      yum: name={{ item }} state=latest
+      yum: name={{ item }} state=present
       with_items:
         - git
         - libselinux-python
@@ -40,9 +40,11 @@
     - name: Install GitLab repository
       command: bash /tmp/gitlab_install_repository.sh
       when: (gitlab_file.stat.exists == false)
+      register: newrepo
 
     - name: Update Yum cache
       shell: yum makecache
+      when: newrepo.changed
 
     - name: Install GitLab
       yum: name=gitlab-ce-9.1.4 state=present
@@ -54,6 +56,15 @@
         creates=/var/opt/gitlab/bootstrapped
       when: (gitlab_file.stat.exists == false)
       failed_when: false
+
+    - name: Get repo from github
+      git:
+        repo: 'https://github.com/MikeGreyDog/Gitlab-backups.git'
+        dest: /tmp/repo/Gitlab-backups
+        force: yes
+  
+    - name: Change ownership to git user
+      command: chown -R git:git /tmp/repo/Gitlab-backups/.git
 
     - name: Copy GitLab configuration file.
       template:
@@ -75,11 +86,6 @@
          - yamllint
          - pexpect
 
-    - name: Get repo from github
-      git:
-        repo: 'https://github.com/MikeGreyDog/Gitlab-backups.git'
-        dest: /tmp/repo/Gitlab-backups
- 
     - name: Get the latest backup name
       command: ls /tmp/repo/Gitlab-backups/New-Backup
       register: backup_filename
@@ -137,11 +143,30 @@
         dest: /var/opt/gitlab/git-data/repositories/lv239/Ansible-playbooks.git/hooks/post-receive.d/
         owner: git
         group: git
-        mode: 0600
+        mode: 0700
+
+    - name: create Gitlab-backups folder
+      file:
+       path: /tmp/repo/Gitlab-backups
+       owner: git
+       group: git
+       state: directory
+  
+    - name: copy ssh key
+      copy: 
+        src: /var/opt/gitlab/git-data/repositories/lv239/Ansible-playbooks.git/custom_hooks/id_rsa
+        dest: /var/opt/gitlab/.ssh/
+        owner: git
+        group: git
+        force: yes
+        remote_src: yes
+
+    - name: Add sudo rights to git
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        line: 'git ALL=(ALL) NOPASSWD: ALL'
 
     - name: Start Gitlab.
       shell: gitlab-ctl start
-  
-    - name: Remove cloned repo
-      shell: rm -rf /tmp/repo/Gitlab-backups
 
